@@ -6,6 +6,8 @@ const path = require('path');
 const cors = require('cors');
 const webrtc = require("wrtc");
 const app = express();
+var peerBroadcastsConnections = [];
+var peerUserConnections = [];
 var senderStream;
 let RTCPeerConfiguration = {
     username: "3e1a4ec9ff39a03d5093c5fffe230c35a0c9eea8a2b4e5b092f38b6c2784ddf2",
@@ -60,7 +62,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')) });
 
 app.post('/broadcast', async ({ body }, res) => {
-    console.log(body.sdp.type)
+    peerBroadcastsConnections.push(body);
     const peer = new webrtc.RTCPeerConnection({
         RTCPeerConfiguration
     });
@@ -82,7 +84,7 @@ function handleTrackEvent(e, peer) {
 };
 
 app.post('/consumer', async ({ body }, res) => {
-    console.log(body.sdp.type)
+    peerUserConnections.push(body);
     const peer = new webrtc.RTCPeerConnection({
         RTCPeerConfiguration
     });
@@ -114,7 +116,8 @@ app.post('/consumer', async ({ body }, res) => {
 
 app.get('/pausebroadcast', async ({ body }, res) => {
     senderStream = undefined;
-    console.log(senderStream)
+    peerBroadcastsConnections = [];
+    peerUserConnections = [];
     res.status(200).json({ message: `senderStream are cleaned` });
 })
 
