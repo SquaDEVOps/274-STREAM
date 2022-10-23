@@ -80,7 +80,7 @@ app.post('/broadcast', async ({ body }, res) => {
 
 function handleTrackEvent(e, peer) {
     senderStream = e.streams[0];
-    console.log(senderStream, 'handleTrackEvent')
+    console.log(senderStream, 'handleTrackEvent', 'broadcasters:', peerBroadcastsConnections, 'users:', peerUserConnections)
 };
 
 app.post('/consumer', async ({ body }, res) => {
