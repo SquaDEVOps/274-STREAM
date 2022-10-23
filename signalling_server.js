@@ -105,7 +105,7 @@ app.post('/consumer', async ({ body }, res) => {
             sdp: peer.localDescription
         }
 
-        console.log(peer?.sdp?.type, 'peer', payload, 'payload', senderStream, 'stream consumer')
+        console.log(peer, 'peer', payload, 'payload', senderStream, 'stream consumer')
     
         res.status(200).json(payload);
     } else {
