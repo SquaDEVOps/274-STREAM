@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            -webkit-appearance: none;
+        }
+
+        body{
+            background: rgb(36, 36, 36);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        h1{
+            font-size: 4em;
+            color: white;
+            font-weight: bold;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        button{
+            transition: all .45s;
+            cursor: pointer;
+            padding: 2em 3em;
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 1em;
+            background: rgb(68, 232, 120);
+            border: 1px solid rgb(68, 232, 120);
+            border-radius: 4px;
+        }
+
+        button:hover{
+            transition: all .45s;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <h1> Topcam <span></span> </h1>
+    <button> Test WSS connection </button>
+
+    <script>
+        const resultOrigin = document.querySelector('span');
+        const Origin = document.location.origin.replace('https://', '');
+        resultOrigin.innerHTML = `wss://${Origin}`
+        const output = document.querySelector('button');
+        output.innerHTML = "Wait for connection...";
+        // const ws = new WebSocket("ws://localhost:3000");
+        const ws = new WebSocket("wss://topcamwss.herokuapp.com");
+        ws.onopen =
+            () => {
+                output.innerHTML = "Connected to the server";
+                window.onclick = (event) => {
+                    const x = event.clientX;
+                    const y = event.clientY;
+                    console.log(x + ", " + y)
+                    ws.send(JSON.stringify({x: x, y: y}));
+                };
+
+                ws.onmessage = (event) => {
+                    console.log(event.data);
+                    const msg = JSON.parse(event.data);
+                    output.innerHTML = `Answer from server: x = ${msg.x}, y = ${msg.y}`;
+                }
+            };
+    </script>
+</body>
+</html>
