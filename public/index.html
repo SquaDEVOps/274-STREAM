@@ -54,7 +54,7 @@
 
     <script>
         const resultOrigin = document.querySelector('span');
-        const Origin = document.location.origin.replace('https://', '');
+        const Origin = document.location.origin.replace('https://', '').replace('http://', '');
         resultOrigin.innerHTML = `wss://${Origin}`
         const output = document.querySelector('button');
         output.innerHTML = "Wait for connection...";
