@@ -5,7 +5,33 @@ const http = require('http');
 const path = require('path');
 const cors = require('cors');
 const webrtc = require("wrtc");
+const { callbackify } = require('util');
 const app = express();
+const httpServer = http.createServer(app);
+
+const io = require('socket.io')(httpServer, {
+    cors: {
+        origins: ['*']
+    }
+})
+
+io.on('connection', (socket) => {
+    let token = socket.handshake.auth.token;
+    socket.on('disconnect', (data) => {
+        console.log('chat disconnected', data);
+    });
+
+    socket.on('my message', (msg) => {
+        console.log('message:', msg);
+        io.emit('my broadcast', `Servidor: ${msg}`)
+    });
+
+    socket.on('message', ({ message, roomName }) => {
+        io.emit('message', { message, roomName });
+    })
+
+})
+
 var peerBroadcastsConnections = [];
 var peerUserConnections = [];
 var senderStream;
@@ -43,6 +69,8 @@ let RTCPeerConfiguration = {
     password: "fuhYUA7fRk1ctcwASvYTZW9cDwdxRo1bk3Bsvg5Lyh8="
 }
 
+
+
 //CONFIGURATIONS CORS
 app.use(cors());
 
@@ -59,7 +87,7 @@ app.use(express.static(path.join(__dirname, './public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')) });
+app.get('/wss-test', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')) });
 
 app.post('/broadcast', async ({ body }, res) => {
     peerBroadcastsConnections.push(body);
@@ -121,12 +149,10 @@ app.get('/pausebroadcast', async ({ body }, res) => {
     res.status(200).json({ message: `senderStream are cleaned` });
 })
 
-const httpServer = http.createServer(app);
 
 const wss = new WebSocket.Server({ server: httpServer }, () => {
     console.log("Signalling server is now listening");
 });
-
 
 wss.broadcast = (ws, data) => {
     wss.clients.forEach((client) => {
@@ -154,6 +180,8 @@ wss.on('connection', ws => {
     });
 });
 
+
+
 const port = process.env.PORT || 3000;
 
-httpServer.listen(port, () => console.log(`server running: ${port}`))
+httpServer.listen(port, () => console.log(`server running: ${port}`));
