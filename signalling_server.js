@@ -26,8 +26,8 @@ io.on('connection', (socket) => {
         io.emit('my broadcast', `Servidor: ${msg}`)
     });
 
-    socket.on('message', ({ message, roomName }) => {
-        io.emit('message', { message, roomName });
+    socket.on('message', ({ message, roomName, typeRoomate }) => {
+        io.emit('message', { message, roomName, typeRoomate });
     })
 
 })
