@@ -6,8 +6,23 @@ const path = require('path');
 const cors = require('cors');
 const webrtc = require("wrtc");
 const { callbackify } = require('util');
+const { RtcTokenBuilder, RtmTokenBuilder, RtcRole, RtmRole } = require('agora-access-token');
 const app = express();
 const httpServer = http.createServer(app);
+
+//ACESS_TOKEN VARIABLES
+//const appID = '<Your app ID>';
+//const appCertificate = '<Your app certificate>';
+//const channelName = '<The channel this token is generated for>';
+//const uid = 2882341273;
+//const account = "2882341273";
+const role = RtcRole.PUBLISHER;
+ 
+const expirationTimeInSeconds = 3600
+ 
+const currentTimestamp = Math.floor(Date.now() / 1000)
+ 
+const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds
 
 const io = require('socket.io')(httpServer, {
     cors: {
@@ -31,6 +46,18 @@ io.on('connection', (socket) => {
     })
 
 })
+
+//TODO: DEFAULT CONFIGURATIONS CORS, JSON RESPONSE, 404 WRONG PAGE
+app.use(cors());
+
+app.use((req, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Credentials', true);
+    res.set('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS, UPDATE');
+    res.set('Access-Control-Allow-Headers', 'Origin, X-Request-With, Content-type, Accept');
+
+    next();
+});
 
 var peerBroadcastsConnections = [];
 var peerUserConnections = [];
@@ -68,6 +95,14 @@ let RTCPeerConfiguration = {
     ttl: "86400",
     password: "fuhYUA7fRk1ctcwASvYTZW9cDwdxRo1bk3Bsvg5Lyh8="
 }
+
+app.post('/acess_token', async (req, res) => {
+    const { appID, appCertificate, channelName, uid } = req.body;
+    const token = await RtcTokenBuilder.buildTokenWithUid(appID, appCertificate, channelName, uid, role, privilegeExpiredTs);
+    res.status(200).json({
+        token
+    })
+})
 
 
 
@@ -141,6 +176,8 @@ app.post('/consumer', async ({ body }, res) => {
     }
 
 });
+
+
 
 app.get('/pausebroadcast', async ({ body }, res) => {
     senderStream = undefined;
