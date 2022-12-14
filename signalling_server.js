@@ -96,16 +96,6 @@ let RTCPeerConfiguration = {
     password: "fuhYUA7fRk1ctcwASvYTZW9cDwdxRo1bk3Bsvg5Lyh8="
 }
 
-app.post('/acess_token', async (req, res) => {
-    const { appID, appCertificate, channelName, uid } = req.body;
-    const token = await RtcTokenBuilder.buildTokenWithUid(appID, appCertificate, channelName, uid, role, privilegeExpiredTs);
-    res.status(200).json({
-        token
-    })
-})
-
-
-
 //CONFIGURATIONS CORS
 app.use(cors());
 
@@ -121,6 +111,14 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, './public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.post('/acess_token', async (req, res) => {
+    const { appID, appCertificate, channelName, uid } = req.body;
+    const token = await RtcTokenBuilder.buildTokenWithUid(appID, appCertificate, channelName, uid, role, privilegeExpiredTs);
+    res.status(200).json({
+        token
+    })
+})
 
 app.get('/wss-test', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')) });
 
