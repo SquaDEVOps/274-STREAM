@@ -31,7 +31,16 @@ const io = require('socket.io')(httpServer, {
 })
 
 io.on('connection', (socket) => {
-    let token = socket.handshake.auth.token;
+    //let token = socket.handshake.auth.token;
+
+    var query = socket.handshake.query;
+    var roomName = query.roomName;
+    console.log(roomName)
+    if(!roomName) {
+        // Handle this as required
+    }
+    socket.join(roomName);
+
     socket.on('disconnect', (data) => {
         console.log('chat disconnected', data);
     });
