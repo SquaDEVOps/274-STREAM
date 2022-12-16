@@ -5,7 +5,6 @@ const http = require('http');
 const path = require('path');
 const cors = require('cors');
 const webrtc = require("wrtc");
-const { callbackify } = require('util');
 const { RtcTokenBuilder, RtmTokenBuilder, RtcRole, RtmRole } = require('agora-access-token');
 const app = express();
 const httpServer = http.createServer(app);
@@ -30,29 +29,34 @@ const io = require('socket.io')(httpServer, {
     }
 })
 
+let users = [];
+let rooms = [];
+
 io.on('connection', (socket) => {
-    //let token = socket.handshake.auth.token;
 
-    var query = socket.handshake.query;
-    var roomName = query.roomName;
-    console.log(roomName)
-    if(!roomName) {
-        // Handle this as required
-    }
-    socket.join(roomName);
+    let token = socket.handshake.auth.token;
 
-    socket.on('disconnect', (data) => {
-        console.log('chat disconnected', data);
+    socket.on('room', (channel) => {
+        socket.join(channel);
+        // socket.broadcast
+        // .to(channel)
+        // .emit('message', { message: 'Usuário entrou no chat', roomName: 'Admin', typeRoomate: 'Modelo' });
+        //socket.emit('joined', messages.roomName = roomName)
+        socket.on('my message', (msg) => {
+            io.emit('my broadcast', `Servidor: ${msg}`)
+        });
+    
+        socket.on('message', ({ message, roomName, typeRoomate }) => {
+            console.log({message})
+            io.to(channel).emit('message', { message, roomName, typeRoomate });
+        });
+    
+        socket.on('disconnect', (data) => {
+            console.log('chat disconnected', data);
+        });
     });
 
-    socket.on('my message', (msg) => {
-        console.log('message:', msg);
-        io.emit('my broadcast', `Servidor: ${msg}`)
-    });
 
-    socket.on('message', ({ message, roomName, typeRoomate }) => {
-        io.emit('message', { message, roomName, typeRoomate });
-    })
 
 })
 
@@ -207,7 +211,7 @@ wss.broadcast = (ws, data) => {
 };
 
 wss.on('connection', ws => {
-    console.log(`Client connected. Total connected clients: ${wss.clients.size}`);
+    //console.log(`Client connected. Total connected clients: ${wss.clients.size}`);
 
     ws.on('message', (data, isBinary) => {
         // msg = JSON.parse(message);
@@ -216,11 +220,11 @@ wss.on('connection', ws => {
         wss.broadcast(ws, message);
     });
     ws.on('close', ws=> {
-        console.log(`Client disconnected. Total connected clients: ${wss.clients.size}`);
+        //console.log(`Client disconnected. Total connected clients: ${wss.clients.size}`);
     })
 
     ws.on('error', error => {
-        console.log(`Client error. Total connected clients: ${wss.clients.size}`);
+        //console.log(`Client error. Total connected clients: ${wss.clients.size}`);
     });
 });
 
